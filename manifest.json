@@ -1,0 +1,11 @@
+{
+  "created": "2026-07-27",
+  "source": "https://github.com/obra/superpowers",
+  "github": "https://github.com/alieneconomist/alieneconomist/saas-superpowers",
+  "deploy": {
+    "service_file": "/home/opc/ceo/work/git_to_saas/saas-superpowers.service",
+    "port": 8080,
+    "note": "Run: sudo cp ... /etc/systemd/system/ && sudo systemctl enable --now {name}"
+  },
+  "status": "scaffolded"
+}
