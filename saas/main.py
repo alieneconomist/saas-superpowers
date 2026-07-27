@@ -51,3 +51,57 @@ def run(req: Request):
             if len(matches) >= 15:
                 break
     return {"status": "ok", "query": req.input, "matches": matches, "total": len(matches)}
+
+@app.get("/suggest")
+def suggest():
+    """Return popular categories from this repo."""
+    from pathlib import Path as _P
+    candidates = ['README.md', 'readme.md', 'awesome.md']
+    text = ''
+    for c in candidates:
+        p = _P(__file__).parent.parent / c
+        if p.exists():
+            try:
+                text = p.read_text(encoding="utf-8", errors="ignore")
+                break
+            except Exception:
+                pass
+    if not text:
+        return {"suggestions": ["python", "async", "docker", "api", "http"], "total_sections": 0}
+    sections = []
+    for line in text.splitlines():
+        s = line.strip()
+        if s.startswith("## ") and "Table of Contents" not in s and "Sponsors" not in s and len(s) < 80:
+            name = s[3:].strip()
+            if name and name not in sections:
+                sections.append(name)
+        elif s.startswith("### ") and "Table of Contents" not in s and len(s) < 80:
+            name = s[4:].strip()
+            if name and name not in sections:
+                sections.append(name)
+    return {"suggestions": sections[:30], "total_sections": len(sections)}
+
+
+@app.get("/stats")
+def stats():
+    """Return basic stats about this repo's readme."""
+    from pathlib import Path as _P
+    candidates = ['README.md', 'readme.md', 'awesome.md']
+    text = ''
+    for c in candidates:
+        p = _P(__file__).parent.parent / c
+        if p.exists():
+            try:
+                text = p.read_text(encoding="utf-8", errors="ignore")
+                break
+            except Exception:
+                pass
+    if not text:
+        return {"error": "readme not found"}
+    lines = text.splitlines()
+    return {
+        "lines": len(lines),
+        "sections": sum(1 for l in lines if l.startswith("## ") or l.startswith("### ")),
+        "links": sum(1 for l in lines if "](" in l),
+        "size_kb": round(len(text) / 1024, 1),
+    }
